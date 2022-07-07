@@ -1,0 +1,10 @@
+
+*.o
+*.d
+*.su
+*.list
+*.launch
+*.mxproject
+.settings/
+Debug/
+.vscode
