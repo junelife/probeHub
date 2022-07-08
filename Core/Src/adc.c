@@ -26,13 +26,31 @@
 /* ADC Local defines
  *
  */
-#define ADC_SAMPLE_COUNT 16
+#define ADC_INTERRUPT_SAMPLE_COUNT 16
 #define ADC_CHANNEL_COUNT 8
-#define ADC_DMA_FULL_BUFFER_SIZE (ADC_SAMPLE_COUNT * ADC_CHANNEL_COUNT * 2)
-#define ADC_DMA_HALF_BUFFER_SIZE (ADC_SAMPLE_COUNT * ADC_CHANNEL_COUNT)
+#define ADC_DMA_FULL_BUFFER_SIZE (ADC_INTERRUPT_SAMPLE_COUNT * ADC_CHANNEL_COUNT * 2)
+#define ADC_DMA_HALF_BUFFER_SIZE (ADC_INTERRUPT_SAMPLE_COUNT * ADC_CHANNEL_COUNT)
 
-#define VREFINT_CAL (*((uint16_t*) 0x1FFF75AA)) /* datasheet p. 22/94 */
-#define VREF 3.0
+#define ADC_VREFINT_CAL (*((uint16_t*) 0x1FFF75AA)) /* page. 22/94 --- DS12991 Rev 4 */
+#define ADC_VREF 30000
+
+#define ADC_RESOLUTION (4095 * ADC_INTERRUPT_SAMPLE_COUNT)
+
+#define ADC_TS_CAL1 (*((uint16_t*) 0x1FFF75A8)) /* page. 22/94 --- DS12991 Rev 4 */
+
+#define ADC_TC_SAMPLE_COUNT 64
+
+static uint16_t adcTcMap[ADC_TC_SAMPLE_COUNT] = {
+	63757,	63220,	62551,
+	61728,	60731,	59533,	58120,	56478,	54600,	52486,	50151,	47613,	44903,
+	42070,	39154,	36205,	33276,	30421,	27665,	25043,	22584,	20299,	18196,
+	16279,	14544,	12978,	11572,	10322,	9207,	8212,	7337,	6557,	5869,
+	5259,	4720,	4242,	3819,	3445,	3112,	2816,	2553,	2319,	2110,
+	1924,	1757,	1607,	1473,	1353,	1244,	1145,	1057,	976,	903,
+	836,	775,	720,	669,	622,	579,	539,	503,	468,	437,
+	407,
+};
+
 /* ADC interrupts requests work to be done from RR loop
  * Here we defined different work options
  */
@@ -65,10 +83,16 @@ typedef struct {
 /* ADC peripheral related all variables are packets here
  *
  */
-union {
+static union {
     uint8_t buf[sizeof(adcDataType)];
     adcDataType data;
 } adc[ADC_CHANNEL_COUNT];
+
+/* Calculated ADC reference voltage VDDA=VREF+
+ *
+ */
+static long long adcReferenceVoltage = ADC_VREF;
+int adcTemperature;
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -291,64 +315,66 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
     uint16_t min = 4095;
     uint16_t max = 0;
 
-    uint16_t *index = &adc_value[offset + target];
+    uint16_t *pointer = &adc_value[offset + target];
 
-    for (int i = 0; i < ADC_SAMPLE_COUNT; i++) {
-    	sum += *index;
+    for (int i = 0; i < ADC_INTERRUPT_SAMPLE_COUNT; i++) {
+    	sum += *pointer;
 
-        if (min > *index) {
-        	min = *index;
+        if (min > *pointer) {
+        	min = *pointer;
         }
 
-        if (max < *index) {
-        	max = *index;
+        if (max < *pointer) {
+        	max = *pointer;
         }
 
-        index += ADC_CHANNEL_COUNT;
+        pointer += ADC_CHANNEL_COUNT;
     }
     adc[target].data.value = sum;
     adc[target].data.ripple = max - min;
 
     if (adc[target].data.state == ADC_ACTIVE_UNSOLICITED) {
-        static char txBuffer[512];
-        static uint16_t index;
-
+		#ifdef DEBUG_STATE
         adcDataType* pointer = &adc[target].data;
-
+        static char txBuffer[600];
+        static uint16_t index = 0;
+        int calculatedVoltage = adcReferenceVoltage * pointer->value / ADC_RESOLUTION;
         switch (target) {
 			case ADC_PROBE_A1:
-				index = sprintf(txBuffer, "\n\rCHANNELS            16 BIT ADC   RIPPLE\n\r");
-				index += sprintf(&txBuffer[index], "ADC_PROBE_A1      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index = sprintf(&txBuffer[index], "\n\rA1 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_PROBE_A2:
-				index += sprintf(&txBuffer[index], "ADC_PROBE_A2      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_PROBE_A3:
-				index += sprintf(&txBuffer[index], "ADC_PROBE_A3      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_PROBE_B1:
-				index += sprintf(&txBuffer[index], "ADC_PROBE_B1      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_PROBE_B2:
-				index += sprintf(&txBuffer[index], "ADC_PROBE_B2      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_PROBE_B3:
-				index += sprintf(&txBuffer[index], "ADC_PROBE_B3      %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
 				break;
 			case ADC_INTERNAL_TEMP:
-				index += sprintf(&txBuffer[index], "ADC_INTERNAL_TEMP %12d %8d\n\r", pointer->value, pointer->ripple);
+				adcTemperature = (calculatedVoltage - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
+				index += sprintf(&txBuffer[index], "TEMP %5d %5d %5d %d dC\n\r", pointer->value, pointer->ripple, calculatedVoltage, adcTemperature);
+
 				break;
 			case ADC_INTERNAL_VREF:
-				index += sprintf(&txBuffer[index], "ADC_INTERNAL_VREF %12d %8d\n\r", pointer->value, pointer->ripple);
+				index += sprintf(&txBuffer[index], "VREF %5d %5d\n\r", pointer->value, pointer->ripple);
 
-				int vdda = 3000UL * ADC_SAMPLE_COUNT * VREFINT_CAL / pointer->value;
+				adcReferenceVoltage = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointer->value;
 				//3138
-				index += sprintf(&txBuffer[index], "VDDA: %4dmV\n\r", vdda);
+				index += sprintf(&txBuffer[index], "VDDA: %5d\n\r", (int)adcReferenceVoltage);
 				HAL_UART_Transmit_IT(&huart1, (uint8_t*)txBuffer, index);
 				break;
 			default:
 				Error_Handler();
         }
+		#endif
     }
 }
 
