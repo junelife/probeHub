@@ -38,17 +38,17 @@
 
 #define ADC_TS_CAL1 (*((uint16_t*) 0x1FFF75A8)) /* page. 22/94 --- DS12991 Rev 4 */
 
-#define ADC_TC_SAMPLE_COUNT 64
+#define ADC_TC_SAMPLE_COUNT 66
 
 static uint16_t adcTcMap[ADC_TC_SAMPLE_COUNT] = {
-	63757,	63220,	62551,
+	65520, 	63757,	63220,	62551,
 	61728,	60731,	59533,	58120,	56478,	54600,	52486,	50151,	47613,	44903,
 	42070,	39154,	36205,	33276,	30421,	27665,	25043,	22584,	20299,	18196,
 	16279,	14544,	12978,	11572,	10322,	9207,	8212,	7337,	6557,	5869,
 	5259,	4720,	4242,	3819,	3445,	3112,	2816,	2553,	2319,	2110,
 	1924,	1757,	1607,	1473,	1353,	1244,	1145,	1057,	976,	903,
 	836,	775,	720,	669,	622,	579,	539,	503,	468,	437,
-	407,
+	407,	0,
 };
 
 /* ADC interrupts requests work to be done from RR loop
@@ -78,6 +78,7 @@ typedef struct {
 	uint16_t value;
 	uint16_t ripple;
 	adcStateToken state;
+	int temperature;
 } adcDataType;
 
 /* ADC peripheral related all variables are packets here
@@ -315,58 +316,72 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
     uint16_t min = 4095;
     uint16_t max = 0;
 
-    uint16_t *pointer = &adc_value[offset + target];
+    uint16_t *pointerA = &adc_value[offset + target];
+    adcDataType *pointerB = &adc[target].data;
 
     for (int i = 0; i < ADC_INTERRUPT_SAMPLE_COUNT; i++) {
-    	sum += *pointer;
+    	sum += *pointerA;
 
-        if (min > *pointer) {
-        	min = *pointer;
+        if (min > *pointerA) {
+        	min = *pointerA;
         }
 
-        if (max < *pointer) {
-        	max = *pointer;
+        if (max < *pointerA) {
+        	max = *pointerA;
         }
 
-        pointer += ADC_CHANNEL_COUNT;
+        pointerA += ADC_CHANNEL_COUNT;
     }
-    adc[target].data.value = sum;
-    adc[target].data.ripple = max - min;
+    pointerB->value = sum;
+    pointerB->ripple = max - min;
+
+    uint8_t left = 0;
+    uint8_t right = ADC_TC_SAMPLE_COUNT - 1;
+    uint8_t mid;
+
+    while (left + 1 < right) {
+    	mid = (left + right) >> 1;
+    	if (adcTcMap[mid] > pointerB->value) {
+    		left = mid;
+    	} else {
+    		right = mid;
+    	}
+    }
+
+    pointerB->temperature = (pointerB->value - adcTcMap[left]) * 500 / (adcTcMap[right] - adcTcMap[left]) + left * 500 - 2000;
 
     if (adc[target].data.state == ADC_ACTIVE_UNSOLICITED) {
 		#ifdef DEBUG_STATE
-        adcDataType* pointer = &adc[target].data;
-        static char txBuffer[600];
+        static char txBuffer[400];
         static uint16_t index = 0;
-        int calculatedVoltage = adcReferenceVoltage * pointer->value / ADC_RESOLUTION;
+
         switch (target) {
 			case ADC_PROBE_A1:
-				index = sprintf(&txBuffer[index], "\n\rA1 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index = sprintf(txBuffer, "\n\rA1 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A2:
-				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A3:
-				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B1:
-				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B2:
-				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B3:
-				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointer->value, pointer->ripple, calculatedVoltage);
+				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_INTERNAL_TEMP:
-				adcTemperature = (calculatedVoltage - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
-				index += sprintf(&txBuffer[index], "TEMP %5d %5d %5d %d dC\n\r", pointer->value, pointer->ripple, calculatedVoltage, adcTemperature);
+				adcTemperature = (adcReferenceVoltage * pointerB->value / ADC_RESOLUTION - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
+				index += sprintf(&txBuffer[index], "TEMP: %d dC\n\r", adcTemperature);
 
 				break;
 			case ADC_INTERNAL_VREF:
-				index += sprintf(&txBuffer[index], "VREF %5d %5d\n\r", pointer->value, pointer->ripple);
-
-				adcReferenceVoltage = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointer->value;
+//				index += sprintf(&txBuffer[index], "VREF %5d %5d\n\r", pointerB->value, pointerB->ripple);
+				adcReferenceVoltage = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->value;
 				//3138
 				index += sprintf(&txBuffer[index], "VDDA: %5d\n\r", (int)adcReferenceVoltage);
 				HAL_UART_Transmit_IT(&huart1, (uint8_t*)txBuffer, index);
