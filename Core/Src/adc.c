@@ -373,6 +373,7 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
 				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_INTERNAL_TEMP:
+				pointerB->dmv = adc[ADC_INTERNAL_VREF].data.dmv * pointerB->raw / ADC_RESOLUTION;
 				pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
 
 				index += sprintf(&txBuffer[index], "TEMP %ddC %d\n", pointerB->temperature, pointerB->ripple);
