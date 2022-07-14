@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "usart.h"
+#include "binarySearch.h"
 
 /* ADC Local defines
  *
@@ -38,9 +39,11 @@
 
 #define ADC_TS_CAL1 (*((uint16_t*) 0x1FFF75A8)) /* page. 22/94 --- DS12991 Rev 4 */
 
-#define ADC_TC_SAMPLE_COUNT 66
+#define ADC_NTC_SAMPLE_COUNT 66
+#define ADC_NTC_INDEX_COEFFICIENT 50
+#define ADC_NTC_INDEX_OFFSET -4
 
-static uint16_t adcTcMap[ADC_TC_SAMPLE_COUNT] = {
+static const uint16_t adcNtcMap[ADC_NTC_SAMPLE_COUNT] = {
 	65520, 	63757,	63220,	62551,
 	61728,	60731,	59533,	58120,	56478,	54600,	52486,	50151,	47613,	44903,
 	42070,	39154,	36205,	33276,	30421,	27665,	25043,	22584,	20299,	18196,
@@ -74,11 +77,12 @@ uint16_t adc_value[ADC_DMA_FULL_BUFFER_SIZE];
  *
  */
 typedef struct {
-	uint8_t channel;
-	uint16_t value;
-	uint16_t ripple;
-	adcStateToken state;
+	int dmv;
 	int temperature;
+	uint16_t ripple;
+	uint16_t raw;
+	uint8_t channel;
+	adcStateToken state;
 } adcDataType;
 
 /* ADC peripheral related all variables are packets here
@@ -89,11 +93,6 @@ static union {
     adcDataType data;
 } adc[ADC_CHANNEL_COUNT];
 
-/* Calculated ADC reference voltage VDDA=VREF+
- *
- */
-static long long adcReferenceVoltage = ADC_VREF;
-int adcTemperature;
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -332,58 +331,56 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
 
         pointerA += ADC_CHANNEL_COUNT;
     }
-    pointerB->value = sum;
+    pointerB->raw = sum;
     pointerB->ripple = max - min;
 
-    uint8_t left = 0;
-    uint8_t right = ADC_TC_SAMPLE_COUNT - 1;
-    uint8_t mid;
 
-    while (left + 1 < right) {
-    	mid = (left + right) >> 1;
-    	if (adcTcMap[mid] > pointerB->value) {
-    		left = mid;
-    	} else {
-    		right = mid;
-    	}
-    }
 
-    pointerB->temperature = (pointerB->value - adcTcMap[left]) * 500 / (adcTcMap[right] - adcTcMap[left]) + left * 500 - 2000;
-
-    if (adc[target].data.state == ADC_ACTIVE_UNSOLICITED) {
+    if (pointerB->state == ADC_ACTIVE_UNSOLICITED) {
 		#ifdef DEBUG_STATE
         static char txBuffer[400];
         static uint16_t index = 0;
 
         switch (target) {
 			case ADC_PROBE_A1:
-				index = sprintf(txBuffer, "\n\rA1 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index = sprintf(txBuffer, "\n\rA1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A2:
-				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A3:
-				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B1:
-				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B2:
-				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B3:
-				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->value, pointerB->ripple, pointerB->temperature);
+			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+
+				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_INTERNAL_TEMP:
-				adcTemperature = (adcReferenceVoltage * pointerB->value / ADC_RESOLUTION - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
-				index += sprintf(&txBuffer[index], "TEMP: %d dC\n\r", adcTemperature);
+				pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
 
+				index += sprintf(&txBuffer[index], "TEMP %ddC %d\n", pointerB->temperature, pointerB->ripple);
 				break;
 			case ADC_INTERNAL_VREF:
-//				index += sprintf(&txBuffer[index], "VREF %5d %5d\n\r", pointerB->value, pointerB->ripple);
-				adcReferenceVoltage = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->value;
-				//3138
-				index += sprintf(&txBuffer[index], "VDDA: %5d\n\r", (int)adcReferenceVoltage);
+				pointerB->dmv = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
+
+				index += sprintf(&txBuffer[index], "VDDA %ddmV %d\n", pointerB->dmv, pointerB->ripple);
 				HAL_UART_Transmit_IT(&huart1, (uint8_t*)txBuffer, index);
 				break;
 			default:
@@ -427,7 +424,7 @@ adcStateToken ADC_Config_Single(adcToken target, adcStateToken state) {
  *
  */
 uint16_t ADC_Value_Last_Get(adcToken target) {
-	return adc[target].data.value;
+	return adc[target].data.raw;
 }
 
 /* This function return last updated ripple on specific channel (adcToken)
