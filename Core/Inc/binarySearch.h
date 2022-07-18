@@ -15,7 +15,9 @@
 
 #include "main.h"
 
-int BinarySearch_Gap_Finder_I16(const int16_t* table, int tableSize, int target, int indexCoefficent, int indexOffset);
-int BinarySearch_Gap_Finder_U16(const uint16_t* table, int tableSize, int target, int indexCoefficent, int indexOffset);
+int BinarySearch_Gap_Finder_Linear_Interpolation_I16(const int16_t* table, int tableSize, int target,
+                                                     int indexCoefficent, int indexOffset);
+int BinarySearch_Gap_Finder_Linear_Interpolation_U16(const uint16_t* table, int tableSize, int target,
+                                                     int indexCoefficent, int indexOffset);
 
 #endif /* INC_BINARYSEARCH_H_ */

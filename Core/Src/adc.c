@@ -343,32 +343,32 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
 
         switch (target) {
 			case ADC_PROBE_A1:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index = sprintf(txBuffer, "\n\rA1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A2:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A3:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B1:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B2:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B3:
-			    pointerB->temperature = BinarySearch_Gap_Finder_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 
 				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;

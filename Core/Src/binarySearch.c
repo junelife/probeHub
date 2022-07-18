@@ -13,42 +13,48 @@
 // Local includes
 #include "binarySearch.h"
 
+#include "main.h"
+
 // Binary Search for TC (table sort: Ascending)
-int BinarySearch_Gap_Finder_I16(const int16_t* table, int tableSize, int target, int indexCoefficent, int indexOffset) {
-	int left = 0;
-	int right = tableSize - 1;
-	int mid;
+int BinarySearch_Gap_Finder_Linear_Interpolation_I16(const int16_t* table, int tableSize, int target,
+                                                     int indexCoefficent, int indexOffset) {
+    int left = 0;
+    int right = tableSize - 1;
+    int mid;
 
     while (left + 1 < right) {
-    	mid = (left + right) >> 1;
-    	if (table[mid] > target) {
-    		right = mid;
-    	} else if (table[mid] < target) {
-    		left = mid;
-    	} else {
-    		return indexCoefficent * (mid + indexOffset);
-    	}
+        mid = (left + right) >> 1;
+        if (table[mid] > target) {
+            right = mid;
+        } else if (table[mid] < target) {
+            left = mid;
+        } else {
+            return indexCoefficent * (mid + indexOffset);
+        }
     }
 
-    return indexCoefficent * (target - table[left]) / (table[right] - table[left]) + indexCoefficent * (left + indexOffset);
+    return indexCoefficent * (target - table[left]) / (table[right] - table[left]) +
+           indexCoefficent * (left + indexOffset);
 }
 
 // Binary Search for NTC (table sort: Descending)
-int BinarySearch_Gap_Finder_U16(const uint16_t* table, int tableSize, int target, int indexCoefficent, int indexOffset) {
-	int left = 0;
-	int right = tableSize - 1;
-	int mid;
+int BinarySearch_Gap_Finder_Linear_Interpolation_U16(const uint16_t* table, int tableSize, int target,
+                                                     int indexCoefficent, int indexOffset) {
+    int left = 0;
+    int right = tableSize - 1;
+    int mid;
 
     while (left + 1 < right) {
-    	mid = (left + right) >> 1;
-    	if (table[mid] > target) {
-    		left = mid;
-    	} else if (table[mid] < target) {
-    		right = mid;
-    	} else {
-    		return indexCoefficent * (mid + indexOffset);
-    	}
+        mid = (left + right) >> 1;
+        if (table[mid] > target) {
+            left = mid;
+        } else if (table[mid] < target) {
+            right = mid;
+        } else {
+            return indexCoefficent * (mid + indexOffset);
+        }
     }
 
-    return indexCoefficent * (target - table[left]) / (table[right] - table[left]) + indexCoefficent * (left + indexOffset);
+    return indexCoefficent * (target - table[left]) / (table[right] - table[left]) +
+           indexCoefficent * (left + indexOffset);
 }
