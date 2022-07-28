@@ -28,7 +28,7 @@
  *
  */
 #define ADC_INTERRUPT_SAMPLE_COUNT 16
-#define ADC_CHANNEL_COUNT 8
+#define ADC_CHANNEL_COUNT ADC_END_OF_LIST
 #define ADC_DMA_FULL_BUFFER_SIZE (ADC_INTERRUPT_SAMPLE_COUNT * ADC_CHANNEL_COUNT * 2)
 #define ADC_DMA_HALF_BUFFER_SIZE (ADC_INTERRUPT_SAMPLE_COUNT * ADC_CHANNEL_COUNT)
 
@@ -42,6 +42,8 @@
 #define ADC_NTC_SAMPLE_COUNT 66
 #define ADC_NTC_INDEX_COEFFICIENT 50
 #define ADC_NTC_INDEX_OFFSET -4
+
+#define ADC_DECI_MILLI_VOLTAGE (pointerB->voltage = adc[ADC_INTERNAL_VREF].data.voltage * pointerB->raw / ADC_RESOLUTION)
 
 static const uint16_t adcNtcMap[ADC_NTC_SAMPLE_COUNT] = {
 	65520, 	63757,	63220,	62551,
@@ -77,7 +79,7 @@ uint16_t adc_value[ADC_DMA_FULL_BUFFER_SIZE];
  *
  */
 typedef struct {
-	int dmv;
+	int voltage;
 	int temperature;
 	uint16_t ripple;
 	uint16_t raw;
@@ -93,6 +95,11 @@ static union {
     adcDataType data;
 } adc[ADC_CHANNEL_COUNT];
 
+// Local function prototypes
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hdma_adc1);
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hdma_adc1);
+void ADC_Calculate(adcToken target, uint8_t offset);
+void ADC_Sequence(int offset);
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -334,55 +341,82 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
     pointerB->raw = sum;
     pointerB->ripple = max - min;
 
+    switch (target) {
+		case ADC_PROBE_A1:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
 
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_PROBE_A2:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_PROBE_A3:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_PROBE_B1:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_PROBE_B2:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_PROBE_B3:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_INTERNAL_TEMP:
+			// calculate voltage (DECI MILLI voltage)
+			ADC_DECI_MILLI_VOLTAGE;
+
+			pointerB->temperature = (pointerB->voltage - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
+			break;
+		case ADC_INTERNAL_VREF:
+			pointerB->voltage = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
+			break;
+		default:
+			Error_Handler();
+    }
 
     if (pointerB->state == ADC_ACTIVE_UNSOLICITED) {
 		#ifdef DEBUG_STATE
-        static char txBuffer[400];
-        static uint16_t index = 0;
-
         switch (target) {
 			case ADC_PROBE_A1:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index = sprintf(txBuffer, "\n\rA1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("\n\rA1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A2:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index += sprintf(&txBuffer[index], "A2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("A2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_A3:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index += sprintf(&txBuffer[index], "A3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("A3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B1:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index += sprintf(&txBuffer[index], "B1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("B1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B2:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index += sprintf(&txBuffer[index], "B2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("B2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_PROBE_B3:
-			    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
-
-				index += sprintf(&txBuffer[index], "B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
+				printf("B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
 				break;
 			case ADC_INTERNAL_TEMP:
-				pointerB->dmv = adc[ADC_INTERNAL_VREF].data.dmv * pointerB->raw / ADC_RESOLUTION;
-				pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
-
-				index += sprintf(&txBuffer[index], "TEMP %ddC %d\n", pointerB->temperature, pointerB->ripple);
+				printf("TEMP %ddC %d\n", pointerB->temperature, pointerB->ripple);
 				break;
 			case ADC_INTERNAL_VREF:
-				pointerB->dmv = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
-
-				index += sprintf(&txBuffer[index], "VDDA %ddmV %d\n", pointerB->dmv, pointerB->ripple);
-				HAL_UART_Transmit_IT(&huart1, (uint8_t*)txBuffer, index);
+				printf("VDDA %ddmV %d\n", pointerB->voltage, pointerB->ripple);
 				break;
 			default:
 				Error_Handler();
@@ -442,25 +476,32 @@ adcStateToken ADC_Status_Single_Get(adcToken target) {
 	return adc[target].data.state;
 }
 
+/* When ADC data ready by DMA following sequence will run
+ *
+ */
+void ADC_Sequence(int offset) {
+	// Following function call sequence is important! Don't change
+	ADC_Calculate(ADC_INTERNAL_VREF, offset);
+	ADC_Calculate(ADC_INTERNAL_TEMP, offset);
+	ADC_Calculate(ADC_PROBE_A1, offset);
+	ADC_Calculate(ADC_PROBE_A2, offset);
+	ADC_Calculate(ADC_PROBE_A3, offset);
+	ADC_Calculate(ADC_PROBE_B1, offset);
+	ADC_Calculate(ADC_PROBE_B2, offset);
+	ADC_Calculate(ADC_PROBE_B3, offset);
+}
+
 /* ---------------------Round Robin Task Function---------------------
  *
  */
 bool ADC_Task(void) {
 	if (adcPendingWorkState == ADC_JOB_PENDING_FIRST_HALF) {
-	    for (int i = 0; i < ADC_CHANNEL_COUNT; i++) {
-	        if (adc[i].data.state != ADC_OFFLINE) {
-	        	ADC_Calculate(i, 0);
-	        }
-	    }
+		ADC_Sequence(0);
 
 		adcPendingWorkState = ADC_JOB_PENDING_NO;
 		return true;
 	} else if (adcPendingWorkState == ADC_JOB_PENDING_SECOND_HALF) {
-	    for (int i = 0; i < ADC_CHANNEL_COUNT; i++) {
-	        if (adc[i].data.state != ADC_OFFLINE) {
-	        	ADC_Calculate(i, ADC_DMA_HALF_BUFFER_SIZE);
-	        }
-	    }
+		ADC_Sequence(ADC_DMA_HALF_BUFFER_SIZE);
 
 		adcPendingWorkState = ADC_JOB_PENDING_NO;
 		return true;
