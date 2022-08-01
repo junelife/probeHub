@@ -21,6 +21,7 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
+#include "common.h"
 #include "usart.h"
 #include "binarySearch.h"
 

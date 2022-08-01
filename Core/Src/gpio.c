@@ -22,6 +22,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
+#include "common.h"
 struct {
 	GPIO_PinState heartBeat;
 	GPIO_PinState probeA;
@@ -55,21 +56,11 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, RS485_RECEIVER_EN_Pin|RS485_DRIVER_EN_Pin, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = EXTI_ADDR_HEARTBEAT_DEBUG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PCPin PCPin */
-  GPIO_InitStruct.Pin = RS485_RECEIVER_EN_Pin|RS485_DRIVER_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PAPin PAPin */
   GPIO_InitStruct.Pin = EXTI_PROBE_A_DETECT_Pin|EXTI_PROBE_B_DETECT_Pin;
@@ -93,8 +84,8 @@ void GPIO_Init_Read(void) {
 	gpio.probeB = HAL_GPIO_ReadPin(EXTI_PROBE_B_DETECT_GPIO_Port, EXTI_PROBE_B_DETECT_Pin);
 
 	// Turn on RS485 chip
-	HAL_GPIO_WritePin(RS485_RECEIVER_EN_GPIO_Port, RS485_RECEIVER_EN_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(RS485_DRIVER_EN_GPIO_Port, RS485_DRIVER_EN_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(RS485_RECEIVER_EN_GPIO_Port, RS485_RECEIVER_EN_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(RS485_DRIVER_EN_GPIO_Port, RS485_DRIVER_EN_Pin, GPIO_PIN_SET);
 }
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 	switch (GPIO_Pin) {

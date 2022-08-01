@@ -1449,6 +1449,20 @@ HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData,
   }
 }
 
+/* USER CODE BEGIN 4 */
+#include "stdbool.h"
+bool rsRxReady(UART_HandleTypeDef *huart)
+{
+	bool retVal = false;
+	if(huart->RxState == HAL_UART_STATE_READY)
+	{
+		retVal = true;
+	}
+	return(retVal);
+}
+/* USER CODE END 4 */
+
+
 /**
   * @brief Send an amount of data in DMA mode.
   * @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
