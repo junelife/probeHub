@@ -495,14 +495,18 @@ void ADC_Sequence(int offset) {
  *
  */
 bool ADC_Task(void) {
+	if (adcPendingWorkState == ADC_JOB_PENDING_NO) {
+		return false;
+	}
+
 	if (adcPendingWorkState == ADC_JOB_PENDING_FIRST_HALF) {
 		ADC_Sequence(0);
-
 		adcPendingWorkState = ADC_JOB_PENDING_NO;
 		return true;
-	} else if (adcPendingWorkState == ADC_JOB_PENDING_SECOND_HALF) {
-		ADC_Sequence(ADC_DMA_HALF_BUFFER_SIZE);
+	}
 
+	if (adcPendingWorkState == ADC_JOB_PENDING_SECOND_HALF) {
+		ADC_Sequence(ADC_DMA_HALF_BUFFER_SIZE);
 		adcPendingWorkState = ADC_JOB_PENDING_NO;
 		return true;
 	}
