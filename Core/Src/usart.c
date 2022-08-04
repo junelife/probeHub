@@ -27,7 +27,7 @@
 UART_HandleTypeDef huart1;
 
 /* USART1 init function */
-
+#if 0
 void MX_USART1_UART_Init(void)
 {
 
@@ -70,7 +70,7 @@ void MX_USART1_UART_Init(void)
   /* USER CODE END USART1_Init 2 */
 
 }
-
+#endif
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
 

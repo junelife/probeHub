@@ -5490,7 +5490,7 @@ HAL_StatusTypeDef HAL_TIM_ConfigClockSource(TIM_HandleTypeDef *htim, const TIM_C
   tmpsmcr &= ~(TIM_SMCR_SMS | TIM_SMCR_TS);
   tmpsmcr &= ~(TIM_SMCR_ETF | TIM_SMCR_ETPS | TIM_SMCR_ECE | TIM_SMCR_ETP);
   htim->Instance->SMCR = tmpsmcr;
-
+#if 0
   switch (sClockSourceConfig->ClockSource)
   {
     case TIM_CLOCKSOURCE_INTERNAL:
@@ -5607,6 +5607,7 @@ HAL_StatusTypeDef HAL_TIM_ConfigClockSource(TIM_HandleTypeDef *htim, const TIM_C
       status = HAL_ERROR;
       break;
   }
+#endif
   htim->State = HAL_TIM_STATE_READY;
 
   __HAL_UNLOCK(htim);

@@ -399,7 +399,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hdma_adc1) {
 	if (adcPendingWorkState == ADC_JOB_PENDING_NO) {
 		adcPendingWorkState = ADC_JOB_PENDING_SECOND_HALF;
 	} else {
-		Error_Handler();
+//		Error_Handler();
 	}
 }
 
@@ -410,7 +410,7 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hdma_adc1) {
 	if (adcPendingWorkState == ADC_JOB_PENDING_NO) {
 		adcPendingWorkState = ADC_JOB_PENDING_FIRST_HALF;
 	} else {
-		Error_Handler();
+//		Error_Handler();
 	}
 }
 

@@ -202,7 +202,7 @@ void initializeUart(UART_HandleTypeDef *huart)
 void rs485uartSetConfig(UART_HandleTypeDef *huart)
 {
   uint32_t tmpreg;
-  UART_ClockSourceTypeDef clocksource;
+  //UART_ClockSourceTypeDef clocksource;
   uint32_t usartdiv;
   uint32_t pclk;
 
@@ -250,8 +250,8 @@ void rs485uartSetConfig(UART_HandleTypeDef *huart)
   MODIFY_REG(huart->Instance->PRESC, USART_PRESC_PRESCALER, huart->Init.ClockPrescaler);
 
   /*-------------------------- USART BRR Configuration -----------------------*/
-  UART_GETCLOCKSOURCE(huart, clocksource);
-
+  //UART_GETCLOCKSOURCE(huart, clocksource);
+#if 0
     switch (clocksource)
     {
       case UART_CLOCKSOURCE_PCLK1:
@@ -270,7 +270,8 @@ void rs485uartSetConfig(UART_HandleTypeDef *huart)
         pclk = 0U;
         break;
     }
-
+#endif
+    pclk = HAL_RCC_GetPCLK1Freq();
     if (pclk != 0U)
     {
       /* USARTDIV must be greater than or equal to 0d16 */

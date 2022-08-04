@@ -356,7 +356,9 @@ bool buildModbusPacket(uint8_t childAdd, uint8_t fCode, uint8_t *data, uint8_t d
     modbusBuf[mBusNdx++] = (uint8_t) ((crcTemp >> 8) & 0xFF);
 
     reStartModbusTask();
-    if (HAL_UART_Transmit_IT(&rs485uart, modbusBuf, mBusNdx) == HAL_OK)
+
+    if (UART_Transmit_IT(&rs485uart, modbusBuf, mBusNdx) == HAL_OK)
+   //if (HAL_UART_Transmit_IT(&rs485uart, modbusBuf, mBusNdx) == HAL_OK)
     {
         retVal = true;
     }

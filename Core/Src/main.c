@@ -101,7 +101,6 @@ int main(void)
   //MX_IWDG_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
-  //MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   GPIO_Init_Read();
   initializeDownCounters();
@@ -126,30 +125,12 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-//  __HAL_RCC_GPIOC_CLK_ENABLE();
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-//  GPIO_InitStruct.Pin = GPIO_PIN_6;
-//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-//  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-
   while (1)
   {
 //	  HAL_IWDG_Refresh(&hiwdg);
-//	  ADC_Task();
+	  //ADC_Task();
 	  modbusTask();
       hostIpcTask();
-
-//	  UART_Transmit_IT(&rs485uart, (uint8_t *) "RS-Hub_Test", sizeof("RS-485 Test"));
-//	  HAL_Delay(2000);
-//	  if(rsRxReady(&rs485uart))
-//	  {
-//		  UART_Transmit_IT(&rs485uart, rs485In, 10);
-//		  HAL_Delay(200);
-//		  //HAL_UART_Receive_IT(&rs485uart, rs485In, 10);
-//		  HAL_Delay(200);
-//	  }
 
     /* USER CODE END WHILE */
 

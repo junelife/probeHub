@@ -97,9 +97,9 @@ void mbFunctRead(void)
 	    	ipcVars.mbPktSent = buildModbusPacket(ipcVars.pkt->mbAdd, ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
             break;
 	    case MBUS_READ_TYPE:
-	    	ipcVars.msgBuf[ipcVars.msgLen++] = 2;
+	    	ipcVars.msgBuf[ipcVars.msgLen++] = (uint8_t) MBUS_DEV_TYPE_PROBE;
 	    	ipcVars.msgBuf[ipcVars.msgLen++] = 0x16;
-	    	ipcVars.msgBuf[ipcVars.msgLen++] = 0x1;
+	    	ipcVars.msgBuf[ipcVars.msgLen++] = (uint8_t) FW_VERSION;
 	    	ipcVars.mbPktSent = buildModbusPacket(ipcVars.pkt->mbAdd, ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
             break;
 	    case MBUS_READ_HELLO:
@@ -108,6 +108,13 @@ void mbFunctRead(void)
             break;
 		case MBUS_READ_TEMPERATURE:
 			adjustLedBrightness();
+			ipcVars.msgBuf[ipcVars.msgLen++] = 0;
+			ipcVars.msgBuf[ipcVars.msgLen++] = 120;
+			ipcVars.msgBuf[ipcVars.msgLen++] = 0;
+			ipcVars.msgBuf[ipcVars.msgLen++] = 140;
+			ipcVars.mbPktSent = buildModbusPacket(getDeviceAddress(), ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
+			break;
+		case MBUS_READ_FUEL_STATUS:
 			ipcVars.msgBuf[ipcVars.msgLen++] = 0;
 			ipcVars.msgBuf[ipcVars.msgLen++] = 120;
 			ipcVars.msgBuf[ipcVars.msgLen++] = 0;

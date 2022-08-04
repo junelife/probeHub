@@ -15,9 +15,11 @@
 #ifndef INC_COMMON_H_
 #define INC_COMMON_H_
 
-#define FW_VERSION  "0002"
+#define DEBUG_STATE
+
+#define FW_VERSION  02
 #define HW_VERSION  "0001"
-#define DEVICE_ID   "02"
+#define DEVICE_ID   02
 
 #include "stdbool.h"
 #include "stdint.h"
@@ -27,7 +29,6 @@
 #include "stm32g0xx.h"      //This file is included here because it includes headers for STM32 supplied code. Although it isn't
                             //needed for all files, it contains includes that if included in the wrong order, can cause hard to
                             //find compiler errors.
-
 
 
 
