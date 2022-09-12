@@ -42,7 +42,7 @@
 #define EXTI_ADDR_HEARTBEAT_DEBUG_Pin             GPIO_PIN_8
 #define PWM_LED2_GPIO_Port                   GPIOC
 #define PWM_LED2_Pin                              GPIO_PIN_15
-#endif
+
 //Interrupt USAGE
 #define EXTI_PROBE_A_DETECT_EXTI_IRQn        EXTI2_3_IRQn
 #define EXTI_ADDR_HEARTBEAT_DEBUG_EXTI_IRQn  EXTI4_15_IRQn
