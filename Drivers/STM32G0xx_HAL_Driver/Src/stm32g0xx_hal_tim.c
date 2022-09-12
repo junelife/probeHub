@@ -226,7 +226,6 @@ static void TIM_TI3_SetConfig(TIM_TypeDef *TIMx, uint32_t TIM_ICPolarity, uint32
                               uint32_t TIM_ICFilter);
 static void TIM_TI4_SetConfig(TIM_TypeDef *TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection,
                               uint32_t TIM_ICFilter);
-static void TIM_ITRx_SetConfig(TIM_TypeDef *TIMx, uint32_t InputTriggerSource);
 static void TIM_DMAPeriodElapsedCplt(DMA_HandleTypeDef *hdma);
 static void TIM_DMAPeriodElapsedHalfCplt(DMA_HandleTypeDef *hdma);
 static void TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma);
@@ -4275,51 +4274,17 @@ HAL_StatusTypeDef HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef *htim,
 {
   HAL_StatusTypeDef status = HAL_OK;
 
-  /* Check the parameters */
-  assert_param(IS_TIM_CHANNELS(Channel));
-  assert_param(IS_TIM_PWM_MODE(sConfig->OCMode));
-  assert_param(IS_TIM_OC_POLARITY(sConfig->OCPolarity));
-  assert_param(IS_TIM_FAST_STATE(sConfig->OCFastMode));
-
   /* Process Locked */
   __HAL_LOCK(htim);
 
   switch (Channel)
   {
     case TIM_CHANNEL_1:
-    {
-      /* Check the parameters */
-      assert_param(IS_TIM_CC1_INSTANCE(htim->Instance));
-
-      /* Configure the Channel 1 in PWM mode */
-      TIM_OC1_SetConfig(htim->Instance, sConfig);
-
-      /* Set the Preload enable bit for channel1 */
-      htim->Instance->CCMR1 |= TIM_CCMR1_OC1PE;
-
-      /* Configure the Output Fast mode */
-      htim->Instance->CCMR1 &= ~TIM_CCMR1_OC1FE;
-      htim->Instance->CCMR1 |= sConfig->OCFastMode;
-      break;
-    }
-
     case TIM_CHANNEL_2:
-    {
-      /* Check the parameters */
-      assert_param(IS_TIM_CC2_INSTANCE(htim->Instance));
-
-      /* Configure the Channel 2 in PWM mode */
-      TIM_OC2_SetConfig(htim->Instance, sConfig);
-
-      /* Set the Preload enable bit for channel2 */
-      htim->Instance->CCMR1 |= TIM_CCMR1_OC2PE;
-
-      /* Configure the Output Fast mode */
-      htim->Instance->CCMR1 &= ~TIM_CCMR1_OC2FE;
-      htim->Instance->CCMR1 |= sConfig->OCFastMode << 8U;
+    case TIM_CHANNEL_4:
+    case TIM_CHANNEL_5:
+    case TIM_CHANNEL_6:
       break;
-    }
-
     case TIM_CHANNEL_3:
     {
       /* Check the parameters */
@@ -4334,57 +4299,6 @@ HAL_StatusTypeDef HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef *htim,
       /* Configure the Output Fast mode */
       htim->Instance->CCMR2 &= ~TIM_CCMR2_OC3FE;
       htim->Instance->CCMR2 |= sConfig->OCFastMode;
-      break;
-    }
-
-    case TIM_CHANNEL_4:
-    {
-      /* Check the parameters */
-      assert_param(IS_TIM_CC4_INSTANCE(htim->Instance));
-
-      /* Configure the Channel 4 in PWM mode */
-      TIM_OC4_SetConfig(htim->Instance, sConfig);
-
-      /* Set the Preload enable bit for channel4 */
-      htim->Instance->CCMR2 |= TIM_CCMR2_OC4PE;
-
-      /* Configure the Output Fast mode */
-      htim->Instance->CCMR2 &= ~TIM_CCMR2_OC4FE;
-      htim->Instance->CCMR2 |= sConfig->OCFastMode << 8U;
-      break;
-    }
-
-    case TIM_CHANNEL_5:
-    {
-      /* Check the parameters */
-      assert_param(IS_TIM_CC5_INSTANCE(htim->Instance));
-
-      /* Configure the Channel 5 in PWM mode */
-      TIM_OC5_SetConfig(htim->Instance, sConfig);
-
-      /* Set the Preload enable bit for channel5*/
-      htim->Instance->CCMR3 |= TIM_CCMR3_OC5PE;
-
-      /* Configure the Output Fast mode */
-      htim->Instance->CCMR3 &= ~TIM_CCMR3_OC5FE;
-      htim->Instance->CCMR3 |= sConfig->OCFastMode;
-      break;
-    }
-
-    case TIM_CHANNEL_6:
-    {
-      /* Check the parameters */
-      assert_param(IS_TIM_CC6_INSTANCE(htim->Instance));
-
-      /* Configure the Channel 6 in PWM mode */
-      TIM_OC6_SetConfig(htim->Instance, sConfig);
-
-      /* Set the Preload enable bit for channel6 */
-      htim->Instance->CCMR3 |= TIM_CCMR3_OC6PE;
-
-      /* Configure the Output Fast mode */
-      htim->Instance->CCMR3 &= ~TIM_CCMR3_OC6FE;
-      htim->Instance->CCMR3 |= sConfig->OCFastMode << 8U;
       break;
     }
 
@@ -7791,6 +7705,7 @@ static void TIM_TI4_SetConfig(TIM_TypeDef *TIMx, uint32_t TIM_ICPolarity, uint32
   TIMx->CCER = tmpccer ;
 }
 
+#if 0
 /**
   * @brief  Selects the Input Trigger source
   * @param  TIMx to select the TIM peripheral
@@ -7819,6 +7734,8 @@ static void TIM_ITRx_SetConfig(TIM_TypeDef *TIMx, uint32_t InputTriggerSource)
   /* Write to TIMx SMCR */
   TIMx->SMCR = tmpsmcr;
 }
+
+#endif
 /**
   * @brief  Configures the TIMx External Trigger (ETR).
   * @param  TIMx to select the TIM peripheral

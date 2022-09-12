@@ -15,6 +15,7 @@
 
 #include "common.h"
 #include "rs485.h"
+#include "gpioUtils.h"
 
 #define UART_UNLOCKED 0x00U
 #define UART_LOCKED 0x01U
@@ -63,16 +64,6 @@ void initializeRs485(void)
     SetRxFifoThreshold(&rs485uart, UART_RXFIFO_THRESHOLD_1_8);
 
     UARTEx_EnableFifoMode(&rs485uart);
-
-
-    // rs485uart.TxXferSize  = 0;
-   // rs485uart.TxXferCount = 0;
-
-
-   rs485uart.RxISR       = rs485RxInterrupt;
-   rs485uart.TxISR       = rs485TxInterrupt;
-
-
 
     configureRs455RxInterrupt(&rs485uart);
 
@@ -141,7 +132,7 @@ void SetRxFifoThreshold(UART_HandleTypeDef *huart, uint32_t Threshold)
 
 void initializeUart(UART_HandleTypeDef *huart)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
+//    GPIO_InitTypeDef GPIO_InitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
     if (huart->gState == UART_STATE_RESET)
@@ -158,19 +149,10 @@ void initializeUart(UART_HandleTypeDef *huart)
 
         __HAL_RCC_USART1_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = RS485_TX_PIN | RS485_RX_PIN;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF1_USART1;
-        HAL_GPIO_Init(RS485_TX_PORT, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = RS485_DE_PIN;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF4_USART1;
-        HAL_GPIO_Init(RS485_DE_PORT, &GPIO_InitStruct);
+        configGpioNoPull(RS485_TX_PORT, RS485_TX_PIN | RS485_RX_PIN,  GPIO_MODE_AF_PP, GPIO_AF1_USART1);
+
+        configGpioNoPull(RS485_DE_PORT,  RS485_DE_PIN,  GPIO_MODE_AF_PP, GPIO_AF4_USART1);
 
         /* USART1 interrupt Init */
         HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
@@ -207,17 +189,17 @@ void rs485uartSetConfig(UART_HandleTypeDef *huart)
   uint32_t pclk;
 
   /* Check the parameters */
-  assert_param(IS_UART_BAUDRATE(huart->Init.BaudRate));
-  assert_param(IS_UART_WORD_LENGTH(huart->Init.WordLength));
-  assert_param(IS_UART_STOPBITS(huart->Init.StopBits));
-  assert_param(IS_UART_ONE_BIT_SAMPLE(huart->Init.OneBitSampling));
+ // assert_param(IS_UART_BAUDRATE(huart->Init.BaudRate));
+  //assert_param(IS_UART_WORD_LENGTH(huart->Init.WordLength));
+ // assert_param(IS_UART_STOPBITS(huart->Init.StopBits));
+ // assert_param(IS_UART_ONE_BIT_SAMPLE(huart->Init.OneBitSampling));
 
 
-  assert_param(IS_UART_PARITY(huart->Init.Parity));
-  assert_param(IS_UART_MODE(huart->Init.Mode));
-  assert_param(IS_UART_HARDWARE_FLOW_CONTROL(huart->Init.HwFlowCtl));
-  assert_param(IS_UART_OVERSAMPLING(huart->Init.OverSampling));
-  assert_param(IS_UART_PRESCALER(huart->Init.ClockPrescaler));
+  //assert_param(IS_UART_PARITY(huart->Init.Parity));
+ // assert_param(IS_UART_MODE(huart->Init.Mode));
+ // assert_param(IS_UART_HARDWARE_FLOW_CONTROL(huart->Init.HwFlowCtl));
+ // assert_param(IS_UART_OVERSAMPLING(huart->Init.OverSampling));
+ // assert_param(IS_UART_PRESCALER(huart->Init.ClockPrescaler));
 
   /*-------------------------- USART CR1 Configuration -----------------------*/
   /* Clear M, PCE, PS, TE, RE and OVER8 bits and configure
@@ -338,7 +320,6 @@ static void configureRs455RxInterrupt(UART_HandleTypeDef *huart)
 
     UART_MASK_COMPUTATION(huart);  // Computation of UART mask to apply to RDR register
 
-    huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->RxState = HAL_UART_STATE_BUSY_RX;
 
     ATOMIC_SET_BIT(huart->Instance->CR3, USART_CR3_EIE);  // Enable the UART Error Interrupt: (Frame error, noise error, overrun error)
@@ -440,10 +421,8 @@ void UART1_IRQHandler(UART_HandleTypeDef *huart)
           && (((cr1its & USART_CR1_RXNEIE_RXFNEIE) != 0U)
               || ((cr3its & USART_CR3_RXFTIE) != 0U)))
       {
-        if (huart->RxISR != NULL)
-        {
           huart->RxISR(huart);
-        }
+
       }
       /* If Error is to be considered as blocking :
           - Receiver Timeout error in Reception
@@ -485,7 +464,7 @@ void UART1_IRQHandler(UART_HandleTypeDef *huart)
       && ((cr1its & USART_ISR_IDLE) != 0U))
   {
       huart->Instance->ICR = UART_CLEAR_IDLEF;
-
+#if 0
     /* Check if DMA mode is enabled in UART */
     if (HAL_IS_BIT_SET(huart->Instance->CR3, USART_CR3_DMAR))
     {
@@ -523,6 +502,7 @@ void UART1_IRQHandler(UART_HandleTypeDef *huart)
       return;
     }
     else
+#endif
     {
       /* DMA mode not enabled */
       /* Check received length : If all expected data are received, do nothing.
@@ -558,10 +538,7 @@ void UART1_IRQHandler(UART_HandleTypeDef *huart)
       && (((cr1its & USART_CR1_TXEIE_TXFNFIE) != 0U)
           || ((cr3its & USART_CR3_TXFTIE) != 0U)))
   {
-    if (huart->TxISR != NULL)
-    {
       huart->TxISR(huart);
-    }
     return;
   }
 
@@ -576,7 +553,8 @@ void UART1_IRQHandler(UART_HandleTypeDef *huart)
 }
 
 
-
+uint8_t tmpTxVal[25];
+uint8_t tmpTxValNdx;
 
 /*********************************************************************************************/
 /*********************************************************************************************/
@@ -608,6 +586,7 @@ static void rs485TxInterrupt(UART_HandleTypeDef *huart)
       }
       else if (READ_BIT(huart->Instance->ISR, USART_ISR_TXE_TXFNF) != 0U)
       {
+    	tmpTxVal[tmpTxValNdx++] = (uint8_t) *huart->pTxBuffPtr;
         huart->Instance->TDR = (uint8_t)(*huart->pTxBuffPtr & (uint8_t)0xFF);
         huart->pTxBuffPtr++;
         huart->TxXferCount--;
@@ -641,7 +620,7 @@ HAL_StatusTypeDef UART_Transmit_IT(UART_HandleTypeDef *huart, const uint8_t *pDa
     huart->pTxBuffPtr  = pData;
     huart->TxXferSize  = Size;
     huart->TxXferCount = Size;
-    //huart->TxISR       = NULL;
+    tmpTxValNdx = 0;
 
     huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->gState = HAL_UART_STATE_BUSY_TX;

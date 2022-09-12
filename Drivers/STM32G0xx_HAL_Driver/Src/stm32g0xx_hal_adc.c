@@ -390,6 +390,7 @@ HAL_StatusTypeDef HAL_ADC_Init(ADC_HandleTypeDef *hadc)
   }
 
   /* Check the parameters */
+#if 0
   assert_param(IS_ADC_ALL_INSTANCE(hadc->Instance));
   assert_param(IS_ADC_CLOCKPRESCALER(hadc->Init.ClockPrescaler));
   assert_param(IS_ADC_RESOLUTION(hadc->Init.Resolution));
@@ -406,6 +407,7 @@ HAL_StatusTypeDef HAL_ADC_Init(ADC_HandleTypeDef *hadc)
   assert_param(IS_ADC_SAMPLE_TIME(hadc->Init.SamplingTimeCommon1));
   assert_param(IS_ADC_SAMPLE_TIME(hadc->Init.SamplingTimeCommon2));
   assert_param(IS_FUNCTIONAL_STATE(hadc->Init.OversamplingMode));
+
   if (hadc->Init.OversamplingMode == ENABLE)
   {
     assert_param(IS_ADC_OVERSAMPLING_RATIO(hadc->Init.Oversampling.Ratio));
@@ -427,7 +429,7 @@ HAL_StatusTypeDef HAL_ADC_Init(ADC_HandleTypeDef *hadc)
   /* ADC group regular discontinuous mode can be enabled only if              */
   /* continuous mode is disabled.                                             */
   assert_param(!((hadc->Init.DiscontinuousConvMode == ENABLE) && (hadc->Init.ContinuousConvMode == ENABLE)));
-
+#endif
   /* Actions performed only if ADC is coming from state reset:                */
   /* - Initialization of ADC MSP                                              */
   if (hadc->State == HAL_ADC_STATE_RESET)
@@ -2161,22 +2163,6 @@ HAL_StatusTypeDef HAL_ADC_ConfigChannel(ADC_HandleTypeDef *hadc, ADC_ChannelConf
   uint32_t tmp_config_internal_channel;
   __IO uint32_t wait_loop_index = 0UL;
 
-  /* Check the parameters */
-  assert_param(IS_ADC_ALL_INSTANCE(hadc->Instance));
-  assert_param(IS_ADC_CHANNEL(pConfig->Channel));
-  assert_param(IS_ADC_SAMPLING_TIME_COMMON(pConfig->SamplingTime));
-
-  if ((hadc->Init.ScanConvMode == ADC_SCAN_SEQ_FIXED)       ||
-      (hadc->Init.ScanConvMode == ADC_SCAN_SEQ_FIXED_BACKWARD))
-  {
-    assert_param(IS_ADC_REGULAR_RANK_SEQ_FIXED(pConfig->Rank));
-  }
-  else
-  {
-    assert_param(IS_ADC_REGULAR_NB_CONV(hadc->Init.NbrOfConversion));
-
-    assert_param(IS_ADC_REGULAR_RANK(pConfig->Rank));
-  }
 
   __HAL_LOCK(hadc);
 

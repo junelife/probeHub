@@ -12,7 +12,7 @@
 
 #ifndef INC_MODBUS_H_
 #define INC_MODBUS_H_
-#include "../Shared/modbusShare.h"
+#include "modbusShare.h"
 
 #define MODBUS_MAX_DATA_LENGTH 40
 #define MODBUS_MAX_CHILD_ADDRESS 0x60
@@ -55,7 +55,6 @@ extern t_modbus_packet_struct modbusStruct;
 bool modbusTask(void);
 void initializeModbusTask(void);
 bool buildModbusPacket(uint8_t, uint8_t, uint8_t *, uint8_t);
-bool sendModbusMessage(mbMsgName);
 void createRandomModbusAddress(void);
 void setDeviceAddress(uint8_t);
 uint8_t getDeviceAddress(void);

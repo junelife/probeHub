@@ -18,7 +18,7 @@
 extern UART_HandleTypeDef rs485uart;
 
 #define RS485_INSTANCE              USART1
-#define RS485_BAUDRATE              115200;
+#define RS485_BAUDRATE              19200;
 #define RS485_WORDLENGTH            0x00000000U   /*!< 8-bit long UART frame */
 #define RS485_STOPBITS              0x00000000U   /*!< UART frame with 1 stop bit    */
 #define RS485_PARITY                0x00000000U

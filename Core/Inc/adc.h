@@ -69,6 +69,7 @@ adcStateToken ADC_Config_Single(adcToken target, adcStateToken state);
 uint16_t ADC_Value_Last_Get(adcToken target);
 uint16_t ADC_Ripple_Last_Get(adcToken target);
 adcStateToken ADC_Status_Single_Get(adcToken target);
+uint16_t getProbeTemperature(adcToken probe);
 
 // ADC Round Robin Task Function
 bool ADC_Task(void);

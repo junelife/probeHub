@@ -34,7 +34,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdio.h>
 
-#define DEBUG_STATE
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

@@ -12,12 +12,13 @@
  *   This file contains code used to communicate with the grill controller using MODBUS
  */
 
+#include "common.h"
 #include <stdio.h>
 #include <string.h>
-#include "common.h"
 #include "hostIpc.h"
 #include "modbus.h"
 #include "tim.h"
+#include "adc.h"
 
 static void mbFunctRead(void);
 static void mbCmdReset(void);
@@ -25,7 +26,7 @@ static void mBusCmdWrite(void);
 static void adjustLedBrightness(void);
 
 #define IPC_TIME_BETWEEN_PACKETS_MSEC 2 //Wait 2 milliseconds between MODBUS packets
-#define MODBUS_TX_MSG_BUF_SIZE 20
+#define MODBUS_TX_MSG_BUF_SIZE 40
 
 struct ipc_vars
 {
@@ -38,7 +39,7 @@ struct ipc_vars
 } ipcVars;
 
 
-void initializeHostIpcTask(void)
+void __attribute__((__section__(".hostCom"))) initializeHostIpcTask(void)
 {
 	ipcVars.mbPktToSend = false;
 	ipcVars.mbPktSent = false;
@@ -49,7 +50,8 @@ void initializeHostIpcTask(void)
  *   This task task sends packets to the UGC when ipcVars.mbPktToSend indicates
  *   that there is a packet to send
  */
-bool hostIpcTask(void)
+//bool  hostIpcTask(void)
+bool __attribute__((__section__(".hostCom"))) hostIpcTask(void)
 {
 	bool busy = false;
 
@@ -82,10 +84,20 @@ bool hostIpcTask(void)
 	return(busy);
 }
 
-/* NOTE- THIS CODE IS NOT THE FINAL CODE
- *    This code will be replaced when we know the actual MODBUS read commands the devices will have
+
+#define ADD_16_BIT_VALUE_TO_PACKET(VALUE)  ipcVars.msgBuf[ipcVars.msgLen++] = UPPER_BYTE(VALUE);\
+                                           ipcVars.msgBuf[ipcVars.msgLen++] = LOWER_BYTE(VALUE)
+
+void __attribute__((__section__(".hostCom"))) add16bitValuetoPacket(uint16_t value)
+{
+	ipcVars.msgBuf[ipcVars.msgLen++] = UPPER_BYTE(value);
+	ipcVars.msgBuf[ipcVars.msgLen++] = LOWER_BYTE(value);
+}
+
+/*  MODBUS Read commands
+ *
  */
-void mbFunctRead(void)
+void __attribute__((__section__(".hostCom"))) mbFunctRead(void)
 {
 	ipcVars.msgLen = 0;
 	ipcVars.msgBuf[ipcVars.msgLen++] = ipcVars.pkt->data[0];
@@ -107,11 +119,13 @@ void mbFunctRead(void)
 	    	ipcVars.mbPktSent = buildModbusPacket(ipcVars.pkt->mbAdd, ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
             break;
 		case MBUS_READ_TEMPERATURE:
-			adjustLedBrightness();
-			ipcVars.msgBuf[ipcVars.msgLen++] = 0;
-			ipcVars.msgBuf[ipcVars.msgLen++] = 120;
-			ipcVars.msgBuf[ipcVars.msgLen++] = 0;
-			ipcVars.msgBuf[ipcVars.msgLen++] = 140;
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_A1));
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_A2));
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_A3));
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B1));
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B2));
+			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B3));
+
 			ipcVars.mbPktSent = buildModbusPacket(getDeviceAddress(), ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
 			break;
 		case MBUS_READ_FUEL_STATUS:
@@ -211,3 +225,5 @@ void setMbusPktReceived(t_modbus_packet_struct *pkt, bool broadcast)
 	ipcVars.broadCast = broadcast;
 	startDownCounterMs(DWN_CNTR_IPC, IPC_TIME_BETWEEN_PACKETS_MSEC);
 }
+
+

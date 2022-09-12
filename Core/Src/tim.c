@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 #include "common.h"
+#include "gpioUtils.h"
+
 #define LED_BRIGHTNESS_MAX 1024
 /* USER CODE END 0 */
 
@@ -155,7 +157,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 {
 
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+//  GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(timHandle->Instance==TIM3)
   {
   /* USER CODE BEGIN TIM3_MspPostInit 0 */
@@ -166,12 +168,14 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     /**TIM3 GPIO Configuration
     PB0     ------> TIM3_CH3
     */
-    GPIO_InitStruct.Pin = PWM_LED1_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
-    HAL_GPIO_Init(PWM_LED1_GPIO_Port, &GPIO_InitStruct);
+//    GPIO_InitStruct.Pin = PWM_LED1_Pin;
+//    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+//    GPIO_InitStruct.Pull = GPIO_NOPULL;
+//    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+//    GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
+//    HAL_GPIO_Init(PWM_LED1_GPIO_Port, &GPIO_InitStruct);
+
+    configGpioNoPull(PWM_LED1_GPIO_Port, PWM_LED1_Pin,  GPIO_MODE_AF_PP, GPIO_AF1_TIM3);
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
 
@@ -179,6 +183,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
   }
 
 }
+
 
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 {

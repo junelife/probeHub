@@ -15,9 +15,12 @@
 #ifndef INC_COMMON_H_
 #define INC_COMMON_H_
 
-#define DEBUG_STATE
+//#define DEBUG_STATE
 
-#define FW_VERSION  02
+#define UPPER_BYTE(int_x) ((uint8_t) ((int_x >> 8) & 0xff));
+#define LOWER_BYTE(int_x) ((uint8_t) (int_x & 0xff));
+
+#define FW_VERSION  04
 #define HW_VERSION  "0001"
 #define DEVICE_ID   02
 

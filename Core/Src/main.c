@@ -97,7 +97,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //MX_ADC1_Init();
+  MX_ADC1_Init();
   //MX_IWDG_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
@@ -107,15 +107,15 @@ int main(void)
   initializeRs485();
   initializeModbusTask();
 
-  // Test Activate all ADC channels
-  //ADC_Config_Single(ADC_PROBE_A1, ADC_ACTIVE_UNSOLICITED);
-  //ADC_Config_Single(ADC_PROBE_A2, ADC_ACTIVE_UNSOLICITED);
-  //ADC_Config_Single(ADC_PROBE_A3, ADC_ACTIVE_UNSOLICITED);
- // ADC_Config_Single(ADC_PROBE_B1, ADC_ACTIVE_UNSOLICITED);
- // ADC_Config_Single(ADC_PROBE_B2, ADC_ACTIVE_UNSOLICITED);
- // ADC_Config_Single(ADC_PROBE_B3, ADC_ACTIVE_UNSOLICITED);
- // ADC_Config_Single(ADC_INTERNAL_TEMP, ADC_ACTIVE_UNSOLICITED);
- // ADC_Config_Single(ADC_INTERNAL_VREF, ADC_ACTIVE_UNSOLICITED);
+  //Activate all ADC channels
+  ADC_Config_Single(ADC_PROBE_A1, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_A2, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_A3, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B1, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B2, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B3, ADC_ACTIVE);
+  ADC_Config_Single(ADC_INTERNAL_TEMP, ADC_ACTIVE);
+  ADC_Config_Single(ADC_INTERNAL_VREF, ADC_ACTIVE);
 
   // Test
   //LED1_Brightness_Set(0);
@@ -128,7 +128,7 @@ int main(void)
   while (1)
   {
 //	  HAL_IWDG_Refresh(&hiwdg);
-	  //ADC_Task();
+	  ADC_Task();
 	  modbusTask();
       hostIpcTask();
 
