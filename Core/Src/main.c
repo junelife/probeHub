@@ -57,6 +57,10 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+int __io_putchar(int ch) {
+    HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
+    return ch;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
