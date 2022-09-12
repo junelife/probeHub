@@ -44,8 +44,9 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 8K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 32K
+  RAM         (xrw)   : ORIGIN = 0x20000000,   LENGTH = 8K
+  FLASH       (rx)    : ORIGIN = 0x8000000,    LENGTH = 30K
+  HOST_COM    (rx)    : ORIGIN = 0x8007800,    LENGTH = 2K 
 }
 
 /* Sections */
@@ -58,7 +59,7 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
-
+  
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
   {
@@ -127,6 +128,13 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
   } >FLASH
+
+  .hostCom :
+  {
+     . = ALIGN(4);
+     __hostCom__ = .;
+     *(.hostCom*)
+  } >HOST_COM
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);

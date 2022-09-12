@@ -27,7 +27,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "common.h"
+#include "rs485.h"
+#include "modbus.h"
+#include "hostIpc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,13 +65,17 @@ int __io_putchar(int ch) {
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+#include "stdbool.h"
+extern bool rsRxReady(UART_HandleTypeDef *);
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+
+//RRS UART_HandleTypeDef rs485uart;
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -95,34 +102,40 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_IWDG_Init();
+  //MX_IWDG_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
-  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   GPIO_Init_Read();
+  initializeDownCounters();
+  initializeRs485();
+  initializeModbusTask();
 
-  // Test Activate all ADC channels
-  ADC_Config_Single(ADC_PROBE_A1, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_PROBE_A2, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_PROBE_A3, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_PROBE_B1, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_PROBE_B2, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_PROBE_B3, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_INTERNAL_TEMP, ADC_ACTIVE_UNSOLICITED);
-  ADC_Config_Single(ADC_INTERNAL_VREF, ADC_ACTIVE_UNSOLICITED);
+  //Activate all ADC channels
+  ADC_Config_Single(ADC_PROBE_A1, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_A2, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_A3, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B1, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B2, ADC_ACTIVE);
+  ADC_Config_Single(ADC_PROBE_B3, ADC_ACTIVE);
+  ADC_Config_Single(ADC_INTERNAL_TEMP, ADC_ACTIVE);
+  ADC_Config_Single(ADC_INTERNAL_VREF, ADC_ACTIVE);
 
   // Test
-  LED1_Brightness_Set(1);
-  LED2_Brightness_Set(1024);
+  //LED1_Brightness_Set(0);
+  //LED2_Brightness_Set(500);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
-	  HAL_IWDG_Refresh(&hiwdg);
+//	  HAL_IWDG_Refresh(&hiwdg);
 	  ADC_Task();
+	  modbusTask();
+      hostIpcTask();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

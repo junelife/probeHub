@@ -34,7 +34,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdio.h>
 
-#define DEBUG_STATE
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -60,13 +60,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#if 0
 #define EXTI_ADDR_HEARTBEAT_DEBUG_Pin GPIO_PIN_8
 #define EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port GPIOB
 #define EXTI_ADDR_HEARTBEAT_DEBUG_EXTI_IRQn EXTI4_15_IRQn
-#define RS485_RECEIVER_EN_Pin GPIO_PIN_14
-#define RS485_RECEIVER_EN_GPIO_Port GPIOC
-#define RS485_DRIVER_EN_Pin GPIO_PIN_15
-#define RS485_DRIVER_EN_GPIO_Port GPIOC
 #define AN_PROBE_A1_Pin GPIO_PIN_0
 #define AN_PROBE_A1_GPIO_Port GPIOA
 #define AN_PROBE_A2_Pin GPIO_PIN_1
@@ -87,12 +84,8 @@ void Error_Handler(void);
 #define EXTI_PROBE_B_DETECT_EXTI_IRQn EXTI4_15_IRQn
 #define PWM_LED1_Pin GPIO_PIN_0
 #define PWM_LED1_GPIO_Port GPIOB
-#define USART_TX_Pin GPIO_PIN_9
-#define USART_TX_GPIO_Port GPIOA
-#define USART_RX_Pin GPIO_PIN_10
-#define USART_RX_GPIO_Port GPIOA
-#define PWM_LED2_Pin GPIO_PIN_4
-#define PWM_LED2_GPIO_Port GPIOB
+#endif
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

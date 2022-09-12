@@ -163,6 +163,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart);
   *       oversampling rate).
   * @retval HAL status
   */
+#if 0
 HAL_StatusTypeDef HAL_RS485Ex_Init(UART_HandleTypeDef *huart, uint32_t Polarity, uint32_t AssertionTime,
                                    uint32_t DeassertionTime)
 {
@@ -239,7 +240,7 @@ HAL_StatusTypeDef HAL_RS485Ex_Init(UART_HandleTypeDef *huart, uint32_t Polarity,
   /* TEACK and/or REACK to check before moving huart->gState and huart->RxState to Ready */
   return (UART_CheckIdleState(huart));
 }
-
+#endif
 /**
   * @}
   */

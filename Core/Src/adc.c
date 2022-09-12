@@ -21,8 +21,10 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
+#include "common.h"
 #include "usart.h"
 #include "binarySearch.h"
+#include "gpioUtils.h"
 
 /* ADC Local defines
  *
@@ -45,6 +47,7 @@
 
 #define ADC_DECI_MILLI_VOLTAGE (pointerB->voltage = adc[ADC_INTERNAL_VREF].data.voltage * pointerB->raw / ADC_RESOLUTION)
 
+
 static const uint16_t adcNtcMap[ADC_NTC_SAMPLE_COUNT] = {
 	65520, 	63757,	63220,	62551,
 	61728,	60731,	59533,	58120,	56478,	54600,	52486,	50151,	47613,	44903,
@@ -55,6 +58,7 @@ static const uint16_t adcNtcMap[ADC_NTC_SAMPLE_COUNT] = {
 	836,	775,	720,	669,	622,	579,	539,	503,	468,	437,
 	407,	0,
 };
+
 
 /* ADC interrupts requests work to be done from RR loop
  * Here we defined different work options
@@ -151,6 +155,7 @@ void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -211,6 +216,40 @@ void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
+
+
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel*/
+  sConfig.Channel = ADC_CHANNEL_1;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel*/
+  sConfig.Channel = ADC_CHANNEL_2;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel */
+  sConfig.Channel = ADC_CHANNEL_4;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel */
+  sConfig.Channel = ADC_CHANNEL_5;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel */
+  sConfig.Channel = ADC_CHANNEL_6;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel */
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  /* Configure Regular Channel */
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+
   /* USER CODE BEGIN ADC1_Init 2 */
   HAL_ADCEx_Calibration_Start(&hadc1);
 
@@ -224,7 +263,7 @@ void MX_ADC1_Init(void)
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
 {
 
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+//  GPIO_InitTypeDef GPIO_InitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
   if(adcHandle->Instance==ADC1)
   {
@@ -236,10 +275,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
   */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
     PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_SYSCLK;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
     /* ADC1 clock enable */
     __HAL_RCC_ADC_CLK_ENABLE();
@@ -253,11 +289,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     PA5     ------> ADC1_IN5
     PA6     ------> ADC1_IN6
     */
-    GPIO_InitStruct.Pin = AN_PROBE_A1_Pin|AN_PROBE_A2_Pin|AN_PROBE_A3_Pin|AN_PROBE_B1_Pin
-                          |AN_PROBE_B2_Pin|AN_PROBE_B3_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    configGpioNoPull(GPIOA, AN_PROBE_A1_Pin|AN_PROBE_A2_Pin|AN_PROBE_A3_Pin|AN_PROBE_B1_Pin|AN_PROBE_B2_Pin|AN_PROBE_B3_Pin, GPIO_MODE_ANALOG, 0);
+
+
 
     /* ADC1 DMA Init */
     /* ADC1 Init */
@@ -341,6 +376,13 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
     pointerB->raw = sum;
     pointerB->ripple = max - min;
 
+
+
+#ifdef DEBUG_STATE
+    if (pointerB->state == ADC_ACTIVE_UNSOLICITED) {
+
+        static char txBuffer[400];
+        static uint16_t index = 0;
     switch (target) {
 		case ADC_PROBE_A1:
 			// calculate voltage (DECI MILLI voltage)
@@ -390,39 +432,37 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
 		default:
 			Error_Handler();
     }
-
-    if (pointerB->state == ADC_ACTIVE_UNSOLICITED) {
-		#ifdef DEBUG_STATE
-        switch (target) {
-			case ADC_PROBE_A1:
-				printf("\n\rA1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_PROBE_A2:
-				printf("A2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_PROBE_A3:
-				printf("A3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_PROBE_B1:
-				printf("B1 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_PROBE_B2:
-				printf("B2 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_PROBE_B3:
-				printf("B3 %5d %5d %5d\n\r", pointerB->raw, pointerB->ripple, pointerB->temperature);
-				break;
-			case ADC_INTERNAL_TEMP:
-				printf("TEMP %ddC %d\n", pointerB->temperature, pointerB->ripple);
-				break;
-			case ADC_INTERNAL_VREF:
-				printf("VDDA %ddmV %d\n", pointerB->voltage, pointerB->ripple);
-				break;
-			default:
-				Error_Handler();
-        }
-		#endif
+}
+#else
+    switch (target)
+    {
+		case ADC_PROBE_A1:
+		case ADC_PROBE_A2:
+		case ADC_PROBE_A3:
+		case ADC_PROBE_B1:
+		case ADC_PROBE_B2:
+		case ADC_PROBE_B3:
+		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
+			break;
+		case ADC_INTERNAL_TEMP:
+			pointerB->dmv = adc[ADC_INTERNAL_VREF].data.dmv * pointerB->raw / ADC_RESOLUTION;
+			pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
+			break;
+		case ADC_INTERNAL_VREF:
+			pointerB->dmv = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
+			break;
+		default:
+			Error_Handler();
     }
+#endif
+}
+
+
+/* Get a previously calculated probe temperature
+ */
+uint16_t getProbeTemperature(adcToken probe)
+{
+	return((uint16_t) adc[probe].data.temperature);
 }
 
 /* callback function for DMA, this function called when DMA peripheral fills whole defined buffer.
@@ -432,7 +472,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hdma_adc1) {
 	if (adcPendingWorkState == ADC_JOB_PENDING_NO) {
 		adcPendingWorkState = ADC_JOB_PENDING_SECOND_HALF;
 	} else {
-		Error_Handler();
+//		Error_Handler();
 	}
 }
 
@@ -443,7 +483,7 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hdma_adc1) {
 	if (adcPendingWorkState == ADC_JOB_PENDING_NO) {
 		adcPendingWorkState = ADC_JOB_PENDING_FIRST_HALF;
 	} else {
-		Error_Handler();
+//		Error_Handler();
 	}
 }
 

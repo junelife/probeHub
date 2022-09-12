@@ -104,6 +104,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32g0xx_hal.h"
+#include "gpioXlate.h"
+#include "modbusShare.h"
+#include "hostAlert.h"
 
 /** @addtogroup STM32G0xx_HAL_Driver
   * @{
@@ -507,6 +510,13 @@ void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
   */
 __weak void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
+	switch(GPIO_Pin)
+	{
+	  case EXTI_PROBE_A_DETECT_Pin:
+	  case EXTI_PROBE_B_DETECT_Pin:
+	//	  addHostReadEvent(MBUS_READ_TEMPERATURE);
+		  break;
+	}
   /* Prevent unused argument(s) compilation warning */
   UNUSED(GPIO_Pin);
 
@@ -522,6 +532,14 @@ __weak void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
   */
 __weak void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
+	switch(GPIO_Pin)
+	{
+	  case EXTI_PROBE_A_DETECT_Pin:
+	  case EXTI_PROBE_B_DETECT_Pin:
+	//	  addHostReadEvent(MBUS_READ_TEMPERATURE);
+		  break;
+	}
+
   /* Prevent unused argument(s) compilation warning */
   UNUSED(GPIO_Pin);
 
