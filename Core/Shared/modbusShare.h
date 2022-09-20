@@ -59,9 +59,9 @@ typedef enum
 typedef enum
 {
     MBUS_WRITE_ADD = 1,
+
 	MBUS_WRITE_LED_ON_OFF,
 	MBUS_WRITE_LED_WITH_BRIGHTNESS,
-
 } mBusWriteCodes;
 
 

@@ -14,6 +14,7 @@
 #define INC_GPIOXLATE_H_
 
 
+
 //#define REV1_BOARD 1
 
 #ifdef REV1_BOARD
@@ -50,6 +51,7 @@
 #define RS485_RX_PIN                              GPIO_PIN_10
 #define RS485_DE_PORT                        GPIOB
 #define RS485_DE_PIN                              GPIO_PIN_3
+
 //#define EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port  GPIOB
 //#define EXTI_ADDR_HEARTBEAT_DEBUG_Pin             GPIO_PIN_8
 

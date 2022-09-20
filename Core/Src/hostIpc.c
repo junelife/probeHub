@@ -125,12 +125,15 @@ void __attribute__((__section__(".hostCom"))) mbFunctRead(void)
 			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B1));
 			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B2));
 			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B3));
+
 			ipcVars.msgBuf[ipcVars.msgLen++] = getLedBitMapedStatus();
+
 
 			ipcVars.mbPktSent = buildModbusPacket(getDeviceAddress(), ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
 			break;
 		case MBUS_READ_FUEL_STATUS:
 			//ignore these sub-commands
+
 			break;
 
 	    case MBUS_READ_UPGRADE_STATUS:
@@ -205,6 +208,7 @@ void mBusCmdWrite(void)
 	   case MBUS_WRITE_LED_WITH_BRIGHTNESS:
 		   adjustLedBrightness();
 		   setLedStatusFromBitMap(ipcVars.pkt->data[1]);
+
 		   ipcVars.msgBuf[ipcVars.msgLen++] = 1;
 		   ipcVars.mbPktSent = buildModbusPacket(getDeviceAddress(), ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
 		   break;
@@ -215,11 +219,13 @@ void mBusCmdWrite(void)
 }
 
 
+
 static void adjustLedBrightness(void)
 {
 	uint16_t brightness = ((uint16_t) ipcVars.pkt->data[2]) << 8;
 	brightness |= (uint16_t) ipcVars.pkt->data[3];
 	configureLedBrightness(brightness);
+
 }
 
 void setMbusPktReceived(t_modbus_packet_struct *pkt, bool broadcast)

@@ -59,7 +59,9 @@
 extern DMA_HandleTypeDef hdma_adc1;
 //RRS extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
+
 //extern UART_HandleTypeDef rs485uart;
+
 /* USER CODE END EV */
 
 /******************************************************************************/
