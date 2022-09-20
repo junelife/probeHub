@@ -212,16 +212,71 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
   }
 }
 
+struct
+{
+	uint16_t brightness;
+	uint8_t  ledStatusBitMap;
+}ledVar;
+
+void configureLedBrightness(uint16_t brightness)
+{
+	ledVar.brightness = brightness;
+}
+
+uint8_t getLedBitMapedStatus(void)
+{
+	return(ledVar.ledStatusBitMap);
+}
+
+
 /* USER CODE BEGIN 1 */
+void setLedStatusFromBitMap(uint8_t ledStatus)
+{
+	if((ledStatus & 01) == 1)
+	{
+		LED1_Brightness_Set(ledVar.brightness);
+	}
+	else
+	{
+		LED1_Brightness_Set(0);
+	}
+	if((ledStatus & 02) == 2)
+	{
+		LED2_Brightness_Set(ledVar.brightness);
+	}
+	else
+	{
+		LED2_Brightness_Set(0);
+	}
+
+}
+
 int LED1_Brightness_Set(uint16_t input) {
 	if (input > LED_BRIGHTNESS_MAX) return -1;
 	TIM3 -> CCR3 = input;
+	if(input > 0)
+	{
+		ledVar.ledStatusBitMap |= 0x01;
+	}
+	else
+	{
+		ledVar.ledStatusBitMap &= 0x02;
+	}
 	return TIM3 -> CCR3;
 }
 
 int LED2_Brightness_Set(uint16_t input) {
 	if (input > LED_BRIGHTNESS_MAX) return -1;
 	TIM3 -> CCR1 = input;
+	if(input > 0)
+	{
+		ledVar.ledStatusBitMap |= 0x02;
+	}
+	else
+	{
+		ledVar.ledStatusBitMap &= 0x01;
+	}
 	return TIM3 -> CCR1;
+
 }
 /* USER CODE END 1 */

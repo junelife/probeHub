@@ -59,23 +59,15 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pin : PtPin */
-//  GPIO_InitStruct.Pin = EXTI_ADDR_HEARTBEAT_DEBUG_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
 //  HAL_GPIO_Init(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, &GPIO_InitStruct);
 
-  configGpioNoPull(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, EXTI_ADDR_HEARTBEAT_DEBUG_Pin,  GPIO_MODE_IT_RISING, 0);
+//  configGpioNoPull(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, EXTI_ADDR_HEARTBEAT_DEBUG_Pin,  GPIO_MODE_IT_RISING, 0);
 
-  /*Configure GPIO pins : PAPin PAPin */
-//  GPIO_InitStruct.Pin = EXTI_PROBE_A_DETECT_Pin|EXTI_PROBE_B_DETECT_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-//  HAL_GPIO_Init(EXTI_PROBE_A_DETECT_GPIO_Port, &GPIO_InitStruct);
 
-  configGpioNoPull(EXTI_PROBE_A_DETECT_GPIO_Port, EXTI_PROBE_A_DETECT_Pin|EXTI_PROBE_B_DETECT_Pin,  GPIO_MODE_IT_RISING_FALLING, 0);
+  configGpioNoPull(EXTI_PROBE_A_DETECT_GPIO_Port, EXTI_PROBE_A_DETECT_Pin|EXTI_PROBE_A_DETECT_Pin,  GPIO_MODE_IT_RISING_FALLING, 0);
+
+  configGpioNoPull(EXTI_PROBE_B_DETECT_GPIO_Port, EXTI_PROBE_B_DETECT_Pin|EXTI_PROBE_B_DETECT_Pin,  GPIO_MODE_IT_RISING_FALLING, 0);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI_PROBE_A_DETECT_EXTI_IRQn, 0, 0);
@@ -88,7 +80,7 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 2 */
 void GPIO_Init_Read(void) {
-	gpio.heartBeat = HAL_GPIO_ReadPin(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, EXTI_ADDR_HEARTBEAT_DEBUG_Pin);
+//	gpio.heartBeat = HAL_GPIO_ReadPin(EXTI_ADDR_HEARTBEAT_DEBUG_GPIO_Port, EXTI_ADDR_HEARTBEAT_DEBUG_Pin);
 	gpio.probeA = HAL_GPIO_ReadPin(EXTI_PROBE_A_DETECT_GPIO_Port, EXTI_PROBE_A_DETECT_Pin);
 	gpio.probeB = HAL_GPIO_ReadPin(EXTI_PROBE_B_DETECT_GPIO_Port, EXTI_PROBE_B_DETECT_Pin);
 
@@ -98,9 +90,9 @@ void GPIO_Init_Read(void) {
 }
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 	switch (GPIO_Pin) {
-		case EXTI_ADDR_HEARTBEAT_DEBUG_Pin:
-			gpio.heartBeat = GPIO_PIN_SET;
-			break;
+//		case EXTI_ADDR_HEARTBEAT_DEBUG_Pin:
+//			gpio.heartBeat = GPIO_PIN_SET;
+//			break;
 		case EXTI_PROBE_A_DETECT_Pin:
 			gpio.probeA = GPIO_PIN_SET;
 			  addHostReadEvent(MBUS_READ_TEMPERATURE);
@@ -118,9 +110,9 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
 	switch (GPIO_Pin) {
-		case EXTI_ADDR_HEARTBEAT_DEBUG_Pin:
-			gpio.heartBeat = GPIO_PIN_RESET;
-			break;
+//		case EXTI_ADDR_HEARTBEAT_DEBUG_Pin:
+//			gpio.heartBeat = GPIO_PIN_RESET;
+//			break;
 		case EXTI_PROBE_A_DETECT_Pin:
 			gpio.probeA = GPIO_PIN_RESET;
 			 addHostReadEvent(MBUS_READ_TEMPERATURE);

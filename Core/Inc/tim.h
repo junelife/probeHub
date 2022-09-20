@@ -48,6 +48,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE BEGIN Prototypes */
 int LED1_Brightness_Set(uint16_t input);
 int LED2_Brightness_Set(uint16_t input);
+void configureLedBrightness(uint16_t);
+void setLedStatusFromBitMap(uint8_t);
+uint8_t getLedBitMapedStatus(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
