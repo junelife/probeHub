@@ -20,7 +20,7 @@
 #define UPPER_BYTE(int_x) ((uint8_t) ((int_x >> 8) & 0xff));
 #define LOWER_BYTE(int_x) ((uint8_t) (int_x & 0xff));
 
-#define FW_VERSION  04
+#define FW_VERSION  05
 #define HW_VERSION  "0001"
 #define DEVICE_ID   02
 

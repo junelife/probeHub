@@ -445,11 +445,11 @@ void ADC_Calculate(adcToken target, uint8_t offset) {
 		    pointerB->temperature = BinarySearch_Gap_Finder_Linear_Interpolation_U16(adcNtcMap, ADC_NTC_SAMPLE_COUNT, pointerB->raw, ADC_NTC_INDEX_COEFFICIENT, ADC_NTC_INDEX_OFFSET);
 			break;
 		case ADC_INTERNAL_TEMP:
-			pointerB->dmv = adc[ADC_INTERNAL_VREF].data.dmv * pointerB->raw / ADC_RESOLUTION;
-			pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
+			//pointerB->dmv = adc[ADC_INTERNAL_VREF].data.dmv * pointerB->raw / ADC_RESOLUTION;
+			//pointerB->temperature = (pointerB->dmv - ADC_VREF * ADC_TS_CAL1 / 4095)  * 2 / 5 + 300;
 			break;
 		case ADC_INTERNAL_VREF:
-			pointerB->dmv = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
+			//pointerB->dmv = ADC_VREF * ADC_INTERRUPT_SAMPLE_COUNT * ADC_VREFINT_CAL / pointerB->raw;
 			break;
 		default:
 			Error_Handler();

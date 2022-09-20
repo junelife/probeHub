@@ -59,7 +59,7 @@
 extern DMA_HandleTypeDef hdma_adc1;
 //RRS extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
-extern UART_HandleTypeDef rs485uart;
+//extern UART_HandleTypeDef rs485uart;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -165,7 +165,7 @@ void EXTI4_15_IRQHandler(void)
 
   /* USER CODE END EXTI4_15_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(EXTI_PROBE_B_DETECT_Pin);
-  HAL_GPIO_EXTI_IRQHandler(EXTI_ADDR_HEARTBEAT_DEBUG_Pin);
+//  HAL_GPIO_EXTI_IRQHandler(EXTI_ADDR_HEARTBEAT_DEBUG_Pin);
   /* USER CODE BEGIN EXTI4_15_IRQn 1 */
 
   /* USER CODE END EXTI4_15_IRQn 1 */

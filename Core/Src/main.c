@@ -57,16 +57,16 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-int __io_putchar(int ch) {
-    HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-    return ch;
-}
+//int __io_putchar(int ch) {
+//    HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
+//    return ch;
+//}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #include "stdbool.h"
-extern bool rsRxReady(UART_HandleTypeDef *);
+//extern bool rsRxReady(UART_HandleTypeDef *);
 /* USER CODE END 0 */
 
 /**
