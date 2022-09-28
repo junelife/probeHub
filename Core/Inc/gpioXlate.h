@@ -13,8 +13,6 @@
 #ifndef INC_GPIOXLATE_H_
 #define INC_GPIOXLATE_H_
 
-
-
 //#define REV1_BOARD 1
 
 #ifdef REV1_BOARD

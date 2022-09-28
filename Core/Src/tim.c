@@ -116,12 +116,18 @@ void MX_TIM3_Init(void)
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN TIM3_Init 2 */
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
@@ -176,6 +182,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 //    HAL_GPIO_Init(PWM_LED1_GPIO_Port, &GPIO_InitStruct);
 
     configGpioNoPull(PWM_LED1_GPIO_Port, PWM_LED1_Pin,  GPIO_MODE_AF_PP, GPIO_AF1_TIM3);
+    configGpioNoPull(PWM_LED2_GPIO_Port, PWM_LED2_Pin,  GPIO_MODE_AF_PP, GPIO_AF1_TIM3);
+
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
 
@@ -232,7 +240,8 @@ uint8_t getLedBitMapedStatus(void)
 /* USER CODE BEGIN 1 */
 void setLedStatusFromBitMap(uint8_t ledStatus)
 {
-	if((ledStatus & 01) == 1)
+
+	if((ledStatus & 01) > 0)
 	{
 		LED1_Brightness_Set(ledVar.brightness);
 	}
@@ -240,7 +249,8 @@ void setLedStatusFromBitMap(uint8_t ledStatus)
 	{
 		LED1_Brightness_Set(0);
 	}
-	if((ledStatus & 02) == 2)
+	if((ledStatus & 02) > 0)
+
 	{
 		LED2_Brightness_Set(ledVar.brightness);
 	}
@@ -253,7 +263,8 @@ void setLedStatusFromBitMap(uint8_t ledStatus)
 
 int LED1_Brightness_Set(uint16_t input) {
 	if (input > LED_BRIGHTNESS_MAX) return -1;
-	TIM3 -> CCR3 = input;
+	TIM3 -> CCR3 = (uint32_t) input;
+
 	if(input > 0)
 	{
 		ledVar.ledStatusBitMap |= 0x01;
@@ -262,12 +273,14 @@ int LED1_Brightness_Set(uint16_t input) {
 	{
 		ledVar.ledStatusBitMap &= 0x02;
 	}
-	return TIM3 -> CCR3;
+
+	return (uint16_t) TIM3 -> CCR3;
 }
 
 int LED2_Brightness_Set(uint16_t input) {
 	if (input > LED_BRIGHTNESS_MAX) return -1;
-	TIM3 -> CCR1 = input;
+	TIM3 -> CCR2 = (uint32_t) input;
+
 	if(input > 0)
 	{
 		ledVar.ledStatusBitMap |= 0x02;
@@ -276,7 +289,7 @@ int LED2_Brightness_Set(uint16_t input) {
 	{
 		ledVar.ledStatusBitMap &= 0x01;
 	}
-	return TIM3 -> CCR1;
 
+	return (uint16_t) TIM3 -> CCR2;
 }
 /* USER CODE END 1 */

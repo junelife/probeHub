@@ -8,4 +8,8 @@
  5. Started segmenting flash for upgarde process
  
 
+09/20/22 Version 5 (JSW-38023) Folloing Changes:
+ 1. Corrected some GPIO pins
+ 2. Added LED control and reporting MODBUS commands
+
  

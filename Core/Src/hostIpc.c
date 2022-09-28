@@ -127,8 +127,6 @@ void __attribute__((__section__(".hostCom"))) mbFunctRead(void)
 			add16bitValuetoPacket(getProbeTemperature(ADC_PROBE_B3));
 
 			ipcVars.msgBuf[ipcVars.msgLen++] = getLedBitMapedStatus();
-
-
 			ipcVars.mbPktSent = buildModbusPacket(getDeviceAddress(), ipcVars.pkt->fCode, ipcVars.msgBuf, ipcVars.msgLen);
 			break;
 		case MBUS_READ_FUEL_STATUS:
@@ -217,7 +215,6 @@ void mBusCmdWrite(void)
 	       break;
 	}
 }
-
 
 
 static void adjustLedBrightness(void)

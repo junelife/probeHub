@@ -4281,6 +4281,22 @@ HAL_StatusTypeDef HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef *htim,
   {
     case TIM_CHANNEL_1:
     case TIM_CHANNEL_2:
+    {
+      /* Check the parameters */
+      assert_param(IS_TIM_CC2_INSTANCE(htim->Instance));
+
+      /* Configure the Channel 2 in PWM mode */
+      TIM_OC2_SetConfig(htim->Instance, sConfig);
+
+      /* Set the Preload enable bit for channel2 */
+      htim->Instance->CCMR1 |= TIM_CCMR1_OC2PE;
+
+      /* Configure the Output Fast mode */
+      htim->Instance->CCMR1 &= ~TIM_CCMR1_OC2FE;
+      htim->Instance->CCMR1 |= sConfig->OCFastMode << 8U;
+      break;
+    }
+
     case TIM_CHANNEL_4:
     case TIM_CHANNEL_5:
     case TIM_CHANNEL_6:
@@ -4311,6 +4327,7 @@ HAL_StatusTypeDef HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef *htim,
 
   return status;
 }
+
 
 /**
   * @brief  Initializes the TIM One Pulse Channels according to the specified
